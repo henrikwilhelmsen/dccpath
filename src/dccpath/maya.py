@@ -4,7 +4,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at <https://mozilla.org/MPL/2.0/>.
 
-"""Module for locating Autodesk Maya."""
+"""Module for locating Autodesk Maya paths."""
 
 import logging
 import os
@@ -23,8 +23,21 @@ MAYAPY_EXE_NAME: Literal["mayapy.exe", "mayapy"] = (
 )
 
 
+# TODO: Check 'which maya'
 def get_maya_install_dir(version: str) -> Path | None:
-    """Get Maya install location on supported platforms (Linux and Windows)."""
+    """Get the Maya install directory.
+
+    Checks the MAYA_LOCATION variable first, then searches platform specific locations.
+
+    On Windows: checks the registry for Maya's install location.
+    On Linux: checks the default install path ('/usr/autodesk/maya<version>')
+
+    Args:
+        version: The version of Maya to get the install dir for.
+
+    Returns:
+        The path to the install directory if found, otherwise None.
+    """
     maya_location_var = os.environ.get("MAYA_LOCATION")
     if maya_location_var is not None and version in maya_location_var:
         install_dir = Path(maya_location_var)
@@ -70,7 +83,17 @@ def get_maya_install_dir(version: str) -> Path | None:
 
 
 def get_maya(version: str) -> Path | None:
-    """Get the path to the maya executable."""
+    """Get the path to the Maya executable.
+
+    See `dccpath.maya.get_maya_install_dir` for details on which paths are searched.
+
+    Args:
+        version: The version of Maya to get the executable dir for.
+
+    Returns:
+        The path to the Maya executable if found, otherwise None.
+
+    """
     install_dir = get_maya_install_dir(version=version)
     if install_dir is None:
         return None
@@ -83,7 +106,17 @@ def get_maya(version: str) -> Path | None:
 
 
 def get_mayapy(version: str) -> Path | None:
-    """Get the path to the mayapy executable."""
+    """Get the path to the mayapy executable.
+
+    See `dccpath.maya.get_maya_install_dir` for details on which paths are searched.
+
+    Args:
+        version: The version of Maya to get the mayapy executable dir for.
+
+    Returns:
+        The path to the mayapy executable if found, otherwise None.
+
+    """
     install_dir = get_maya_install_dir(version=version)
     if install_dir is None:
         return None

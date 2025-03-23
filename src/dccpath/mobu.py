@@ -4,15 +4,30 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at <https://mozilla.org/MPL/2.0/>.
 
-"""Module for locating Autodesk MotionBuilder."""
+"""Module for locating Autodesk MotionBuilder paths."""
 
 import logging
+import os
 import platform
 from pathlib import Path
+from typing import Literal
 
 logger = logging.getLogger(__name__)
 
+MOBU_BIN_DIR: Literal["bin/x64", "bin/linux_64"] = (
+    "bin/x64" if platform.system() == "Windows" else "bin/linux_64"
+)
 
+MOBU_EXE_NAME: Literal["motionbuilder.exe", "motionbuilder"] = (
+    "motionbuilder.exe" if platform.system() == "Windows" else "motionbuilder"
+)
+
+MOBUPY_EXE_NAME: Literal["mobupy.exe", "mobupy"] = (
+    "mobupy.exe" if platform.system() == "Windows" else "mobupy"
+)
+
+
+# TODO: Check 'which mobu'
 def get_mobu_install_dir(version: str) -> Path | None:
     """Get the MotionBuilder install directory.
 
@@ -30,10 +45,19 @@ def get_mobu_install_dir(version: str) -> Path | None:
     """
     if platform.system() == "Linux":
         default_path = Path(f"/usr/autodesk/MotionBuilder{version}")
-        if default_path.exists() and default_path.is_dir():
+        if default_path.is_dir():
             return default_path
 
     if platform.system() == "Windows":
+        # Check default path
+        program_files = os.getenv("PROGRAMFILES")
+        default_path = Path(
+            f"{program_files}/Autodesk/MotionBuilder {version}/bin/x64",
+        )
+        if default_path.is_dir():
+            return default_path
+
+        # Check registry
         from winreg import (
             HKEY_LOCAL_MACHINE,
             ConnectRegistry,
@@ -59,62 +83,9 @@ def get_mobu_install_dir(version: str) -> Path | None:
             logger.debug("Mobu install dir located in registry: %s", registry_dir)
             return registry_dir
 
-    logger.warning(
-        "Platform %s is not supported, unable to get Mobu install dir",
-        platform.system(),
-    )
     return None
 
 
-def _get_mobupy_linux(version: str) -> Path | None:
-    mobu_install_dir = get_mobu_install_dir(version=version)
-
-    if mobu_install_dir is not None:
-        mobupy = mobu_install_dir / "bin" / "linux_64" / "mobupy"
-
-        if mobupy.exists():
-            return mobupy
-
-    return None
-
-
-def _get_mobupy_win(version: str) -> Path | None:
-    mobu_install_dir = get_mobu_install_dir(version=version)
-
-    if mobu_install_dir is not None:
-        mobupy = mobu_install_dir / "bin" / "x64" / "mobupy.exe"
-
-        if mobupy.exists():
-            return mobupy
-
-    return None
-
-
-def _get_mobu_linux(version: str) -> Path | None:
-    mobu_install_dir = get_mobu_install_dir(version=version)
-
-    if mobu_install_dir is not None:
-        mobupy = mobu_install_dir / "bin" / "linux_64" / "motionbuilder"
-
-        if mobupy.exists():
-            return mobupy
-
-    return None
-
-
-def _get_mobu_win(version: str) -> Path | None:
-    mobu_install_dir = get_mobu_install_dir(version=version)
-
-    if mobu_install_dir is not None:
-        mobu = mobu_install_dir / "bin" / "x64" / "motionbuilder.exe"
-
-        if mobu.exists():
-            return mobu
-
-    return None
-
-
-# TODO: Refactor away the platform specific functions
 def get_mobu(version: str) -> Path | None:
     """Get the path to the MotionBuilder executable if it exists.
 
@@ -124,36 +95,34 @@ def get_mobu(version: str) -> Path | None:
     Returns:
         Path to the executable if found, else None.
     """
-    if platform.system() == "Linux":
-        return _get_mobu_linux(version=version)
+    install_dir = get_mobu_install_dir(version=version)
+    if install_dir is None:
+        return None
 
-    if platform.system() == "Windows":
-        return _get_mobu_win(version=version)
+    mobu = install_dir / MOBU_BIN_DIR / MOBU_EXE_NAME
+    if mobu.is_file():
+        return mobu
 
-    logger.warning(
-        "Platform %s is not supported, unable to get Mobu executable",
-        platform.system(),
-    )
     return None
 
 
 def get_mobupy(version: str) -> Path | None:
-    """Get the path to the mobupy executable if it exists.
+    """Get the path to the mobupy executable.
+
+    See `dccpath.mobu.get_mobu_install_dir` for details on which paths are searched.
 
     Args:
-        version: The version of MotionBuilder to get the executable for.
+        version: The version of MotionBuilder to get the mobupy executable for.
 
     Returns:
-        Path to the executable if found, else None.
+        Path to the mobupy executable if found, else None.
     """
-    if platform.system() == "Linux":
-        return _get_mobupy_linux(version=version)
+    install_dir = get_mobu_install_dir(version=version)
+    if install_dir is None:
+        return None
 
-    if platform.system() == "Windows":
-        return _get_mobupy_win(version=version)
+    mobupy = install_dir / MOBU_BIN_DIR / MOBUPY_EXE_NAME
+    if mobupy.is_file():
+        return mobupy
 
-    logger.warning(
-        "Platform %s is not supported, unable to get mobupy executable",
-        platform.system(),
-    )
     return None
