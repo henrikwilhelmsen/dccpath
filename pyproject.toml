@@ -1,0 +1,57 @@
+[project]
+name = "dccpaths"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Henrik Wilhelmsen", email = "contact@henrikwilhelmsen.com" },
+]
+requires-python = ">=3.10"
+dependencies = []
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[tool.pdm.build]
+includes = ["src"]
+package-dir = "src"
+source-includes = ["tests"]
+
+[tool.pdm.version]
+source = "scm"
+
+[tool.ruff]
+line-length = 88
+src = ["src"]
+target-version = "py310"
+
+[tool.ruff.format]
+docstring-code-format = true
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    "FIX002", # Leave TODO's
+    "TD002",  # Missing author in TODO
+    "TD003",  # Missing issue link in TODO
+]
+per-file-ignores = { "tests/*" = [
+    "ARG001", # Unused argument (pytest fixtures)
+    "S101",   # Assert usage
+] }
+
+pydocstyle.convention = "google"
+
+[tool.basedpyright]
+include = ["src"]
+
+[dependency-groups]
+dev = [
+    "basedpyright>=1.28.3",
+    "debugpy>=1.8.13",
+    "ipykernel>=6.29.5",
+    "pytest>=8.3.5",
+    "pytest-cov>=6.0.0",
+    "ruff>=0.11.2",
+]
