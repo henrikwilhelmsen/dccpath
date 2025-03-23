@@ -1,9 +1,14 @@
 {
     "cSpell.words": [
+        "basedpyright",
+        "dccpaths",
+        "debugpy",
         "MAYAPY",
         "Mobu",
         "mobupy",
         "motionbuilder",
+        "pydocstyle",
+        "pytest",
         "Wilhelmsen"
     ]
 }

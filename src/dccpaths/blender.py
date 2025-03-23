@@ -2,9 +2,9 @@
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
-# file, You
+# file, You can obtain one at <https://mozilla.org/MPL/2.0/>.
 
-"""Module for locating and managing Blender."""
+"""Module for locating Blender."""
 
 import logging
 import os
@@ -19,6 +19,7 @@ logger: Logger = logging.getLogger(__name__)
 BLENDER_EXE_NAME: Literal["blender.exe", "blender"] = (
     "blender.exe" if platform.system() == "Windows" else "blender"
 )
+
 
 def get_blender(version: str) -> Path | None:
     """Get the path to the Blender executable if it exists.
