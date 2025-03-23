@@ -26,7 +26,6 @@ MAYAPY_EXE_NAME: Literal["mayapy.exe", "mayapy"] = (
 def get_maya_install_dir(version: str) -> Path | None:
     """Get Maya install location on supported platforms (Linux and Windows)."""
     maya_location_var = os.environ.get("MAYA_LOCATION")
-
     if maya_location_var is not None and version in maya_location_var:
         install_dir = Path(maya_location_var)
 

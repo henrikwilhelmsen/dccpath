@@ -4,7 +4,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at <https://mozilla.org/MPL/2.0/>.
 
-"""Module for locating Blender."""
+"""Module for locating Blender paths."""
 
 import logging
 import os
@@ -25,15 +25,12 @@ def get_blender(version: str) -> Path | None:
     """Get the path to the Blender executable if it exists.
 
     Args:
-        version (BLENDER_VERSIONS): The version of Blender to get the executable for.
-
-    Raises:
-        KeyError: If a KeyError occurred when searching for existing devin-dcc Blender.
+        version: The version of Blender to get the executable for.
 
     Returns:
-        Path | None: The path to the Blender executable if found, otherwise None.
+        The path to the Blender executable if found, otherwise None.
     """
-    # TODO: Add Linux paths from Blender Launcher
+    # TODO: Add paths from Blender Launcher
 
     if platform.system() == "Windows":
         program_files = os.getenv("PROGRAMFILES")

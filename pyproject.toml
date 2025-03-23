@@ -1,7 +1,7 @@
 [project]
-name = "dccpaths"
+name = "dccpath"
 dynamic = ["version"]
-description = "Add your description here"
+description = "Utility library for locating DCC (Digital Content Creation) software paths"
 readme = "README.md"
 authors = [
     { name = "Henrik Wilhelmsen", email = "contact@henrikwilhelmsen.com" },
