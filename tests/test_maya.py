@@ -13,7 +13,7 @@ from pathlib import Path
 import pytest
 
 from dccpath import get_maya, get_mayapy
-from dccpath._maya import MAYA_EXE_NAME, MAYAPY_EXE_NAME  # noqa: PLC2701
+from dccpath._maya import MAYA_EXE_NAME, MAYAPY_EXE_NAME
 
 
 @pytest.mark.parametrize(

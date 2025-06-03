@@ -7,7 +7,6 @@
         }
     },
     "ruff.enable": true,
-    "ruff.lint.preview": true,
     "ruff.fixAll": true,
     "ruff.organizeImports": true,
     "editor.rulers": [

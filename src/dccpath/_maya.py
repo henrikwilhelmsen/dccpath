@@ -61,7 +61,7 @@ def get_maya_install_dir(version: str) -> Path | None:
 
     # Windows
     if platform.system() == "Windows":
-        from winreg import (  # noqa: PLC0415
+        from winreg import (
             HKEY_LOCAL_MACHINE,
             ConnectRegistry,
             OpenKey,
