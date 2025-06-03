@@ -11,6 +11,7 @@ import os
 import platform
 from logging import Logger
 from pathlib import Path
+from shutil import which
 from typing import Literal
 
 logger: Logger = logging.getLogger(__name__)
@@ -21,9 +22,6 @@ BLENDER_EXE_NAME: Literal["blender.exe", "blender"] = (
 )
 
 
-# TODO: Add get_blender_install_dir
-# TODO: Check 'which blender'
-# TODO: Download Blender
 def get_blender(version: str) -> Path | None:
     """Get the path to the Blender executable if it exists.
 
@@ -33,6 +31,14 @@ def get_blender(version: str) -> Path | None:
     Returns:
         The path to the Blender executable if found, otherwise None.
     """
+    which_blender = which(cmd="blender")
+    if which_blender is not None and Path(which_blender).is_file():
+        return Path(which_blender)
+
+    homebrew_blender = Path("/opt/homebrew/bin/blender")
+    if homebrew_blender.is_file():
+        return homebrew_blender
+
     if platform.system() == "Windows":
         program_files = os.getenv("PROGRAMFILES")
 

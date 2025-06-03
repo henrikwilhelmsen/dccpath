@@ -41,7 +41,6 @@ def get_mobu_install_dir(version: str) -> Path | None:
     Returns:
         The path to the install directory if found, else None.
     """
-    # TODO: Check 'which mobu'
     if platform.system() == "Linux":
         default_path = Path(f"/usr/autodesk/MotionBuilder{version}")
         if default_path.is_dir():

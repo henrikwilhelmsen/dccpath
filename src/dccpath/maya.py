@@ -23,7 +23,6 @@ MAYAPY_EXE_NAME: Literal["mayapy.exe", "mayapy"] = (
 )
 
 
-# TODO: Check 'which maya'
 def get_maya_install_dir(version: str) -> Path | None:
     """Get the Maya install directory.
 
@@ -45,6 +44,12 @@ def get_maya_install_dir(version: str) -> Path | None:
         if install_dir.exists():
             return install_dir
 
+    # Mac
+    if platform.system() == "Darwin":
+        maya_default_path = Path(f"/Applications/Autodesk/maya{version}/Maya.app/Contents")
+
+        if maya_default_path.exists():
+            return maya_default_path
     # Linux
     if platform.system() == "Linux":
         maya_default_path = Path(f"/usr/autodesk/maya{version}")
