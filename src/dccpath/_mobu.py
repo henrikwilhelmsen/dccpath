@@ -47,7 +47,7 @@ def get_mobu_install_dir(version: str) -> Path | None:
             return default_path
 
     if platform.system() == "Windows":
-        from winreg import (
+        from winreg import (  # noqa: PLC0415
             HKEY_LOCAL_MACHINE,
             ConnectRegistry,
             OpenKey,

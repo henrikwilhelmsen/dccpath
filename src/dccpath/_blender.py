@@ -32,7 +32,11 @@ def get_blender(version: str) -> Path | None:
         The path to the Blender executable if found, otherwise None.
     """
     which_blender = which(cmd="blender")
-    if which_blender is not None and Path(which_blender).is_file():
+    if (
+        which_blender is not None
+        and Path(which_blender).is_file()
+        and version in which_blender
+    ):
         return Path(which_blender)
 
     homebrew_blender = Path("/opt/homebrew/bin/blender")

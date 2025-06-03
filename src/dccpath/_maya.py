@@ -46,7 +46,9 @@ def get_maya_install_dir(version: str) -> Path | None:
 
     # Mac
     if platform.system() == "Darwin":
-        maya_default_path = Path(f"/Applications/Autodesk/maya{version}/Maya.app/Contents")
+        maya_default_path = Path(
+            f"/Applications/Autodesk/maya{version}/Maya.app/Contents",
+        )
 
         if maya_default_path.exists():
             return maya_default_path
@@ -59,7 +61,7 @@ def get_maya_install_dir(version: str) -> Path | None:
 
     # Windows
     if platform.system() == "Windows":
-        from winreg import (
+        from winreg import (  # noqa: PLC0415
             HKEY_LOCAL_MACHINE,
             ConnectRegistry,
             OpenKey,
@@ -90,8 +92,6 @@ def get_maya_install_dir(version: str) -> Path | None:
 def get_maya(version: str) -> Path | None:
     """Get the path to the Maya executable.
 
-    See `dccpath.maya.get_maya_install_dir` for details on which paths are searched.
-
     Args:
         version: The version of Maya to get the executable dir for.
 
@@ -112,8 +112,6 @@ def get_maya(version: str) -> Path | None:
 
 def get_mayapy(version: str) -> Path | None:
     """Get the path to the mayapy executable.
-
-    See `dccpath.maya.get_maya_install_dir` for details on which paths are searched.
 
     Args:
         version: The version of Maya to get the mayapy executable dir for.
