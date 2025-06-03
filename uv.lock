@@ -93,8 +93,7 @@ toml = [
 ]
 
 [[package]]
-name = "dccpaths"
-version = "0.1.0"
+name = "dccpath"
 source = { editable = "." }
 
 [package.dev-dependencies]

@@ -7,7 +7,6 @@
 """Module for locating Autodesk MotionBuilder paths."""
 
 import logging
-import os
 import platform
 from pathlib import Path
 from typing import Literal
@@ -27,7 +26,6 @@ MOBUPY_EXE_NAME: Literal["mobupy.exe", "mobupy"] = (
 )
 
 
-# TODO: Check 'which mobu'
 def get_mobu_install_dir(version: str) -> Path | None:
     """Get the MotionBuilder install directory.
 
@@ -43,21 +41,13 @@ def get_mobu_install_dir(version: str) -> Path | None:
     Returns:
         The path to the install directory if found, else None.
     """
+    # TODO: Check 'which mobu'
     if platform.system() == "Linux":
         default_path = Path(f"/usr/autodesk/MotionBuilder{version}")
         if default_path.is_dir():
             return default_path
 
     if platform.system() == "Windows":
-        # Check default path
-        program_files = os.getenv("PROGRAMFILES")
-        default_path = Path(
-            f"{program_files}/Autodesk/MotionBuilder {version}/bin/x64",
-        )
-        if default_path.is_dir():
-            return default_path
-
-        # Check registry
         from winreg import (
             HKEY_LOCAL_MACHINE,
             ConnectRegistry,

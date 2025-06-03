@@ -22,8 +22,8 @@ BLENDER_EXE_NAME: Literal["blender.exe", "blender"] = (
 
 
 # TODO: Add get_blender_install_dir
-# TODO: Add paths from Blender Launcher
 # TODO: Check 'which blender'
+# TODO: Download Blender
 def get_blender(version: str) -> Path | None:
     """Get the path to the Blender executable if it exists.
 

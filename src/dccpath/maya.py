@@ -45,6 +45,13 @@ def get_maya_install_dir(version: str) -> Path | None:
         if install_dir.exists():
             return install_dir
 
+    # Linux
+    if platform.system() == "Linux":
+        maya_default_path = Path(f"/usr/autodesk/maya{version}")
+
+        if maya_default_path.exists():
+            return maya_default_path
+
     # Windows
     if platform.system() == "Windows":
         from winreg import (
@@ -71,13 +78,6 @@ def get_maya_install_dir(version: str) -> Path | None:
         if maya_install_dir.exists():
             logger.debug("Maya install dir located in registry: %s", maya_install_dir)
             return maya_install_dir
-
-    # Linux
-    if platform.system() == "Linux":
-        maya_default_path = Path(f"/usr/autodesk/maya{version}")
-
-        if maya_default_path.exists():
-            return maya_default_path
 
     return None
 
