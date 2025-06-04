@@ -16,27 +16,6 @@ build-backend = "hatchling.build"
 [tool.hatch.version]
 source = "vcs"
 
-[tool.ruff]
-line-length = 88
-src = ["src", "tests"]
-target-version = "py310"
-
-[tool.ruff.format]
-docstring-code-format = true
-
-[tool.ruff.lint]
-select = ["ALL"]
-ignore = [
-    "FIX002", # Leave TODO's
-    "TD002",  # Missing author in TODO
-    "TD003",  # Missing issue link in TODO
-]
-per-file-ignores = { "tests/*" = [
-    "ARG001", # Unused argument (pytest fixtures)
-    "S101",   # Assert usage
-] }
-pydocstyle.convention = "google"
-
 [tool.basedpyright]
 include = ["src"]
 
