@@ -16,21 +16,25 @@ from typing import Literal
 
 logger: Logger = logging.getLogger(__name__)
 
-# Path to the Blender executable relative to the downloaded Blender dir
-BLENDER_EXE_NAME: Literal["blender.exe", "blender"] = (
-    "blender.exe" if platform.system() == "Windows" else "blender"
-)
+CURRENT_PLATFORM = platform.system()
 
 
-def get_blender(version: str) -> Path | None:
+def get_blender(version: str) -> Path:
     """Get the path to the Blender executable if it exists.
 
     Args:
         version: The version of Blender to get the executable for.
 
+    Raises:
+        FileNotFoundError: If a Blender executable could not be found.
+
     Returns:
-        The path to the Blender executable if found, otherwise None.
+        The path to the Blender executable if found.
     """
+    blender_name: Literal["blender.exe", "blender"] = (
+        "blender.exe" if CURRENT_PLATFORM == "Windows" else "blender"
+    )
+
     which_blender = which(cmd="blender")
     if (
         which_blender is not None
@@ -39,19 +43,21 @@ def get_blender(version: str) -> Path | None:
     ):
         return Path(which_blender)
 
-    homebrew_blender = Path("/opt/homebrew/bin/blender")
-    if homebrew_blender.is_file():
-        return homebrew_blender
+    if CURRENT_PLATFORM == "Darwin":
+        homebrew_blender = Path("/opt/homebrew/bin/blender")
+        if homebrew_blender.is_file():
+            return homebrew_blender
 
-    if platform.system() == "Windows":
+    if CURRENT_PLATFORM == "Windows":
         program_files = os.getenv("PROGRAMFILES")
 
         if program_files is not None:
             default_blender = Path(
-                rf"{program_files}\Blender Foundation\Blender {version}\{BLENDER_EXE_NAME}",  # noqa: E501
+                rf"{program_files}\Blender Foundation\Blender {version}\{blender_name}",
             )
 
             if default_blender.is_file():
                 return default_blender
 
-    return None
+    msg = f"Unable to locate a Blender {version} executable"
+    raise FileNotFoundError(msg)
