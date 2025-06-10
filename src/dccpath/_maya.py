@@ -76,7 +76,7 @@ def get_maya_install_dir(version: str) -> Path:
                 return maya_install_dir
 
         except FileNotFoundError:
-            logger.exception(
+            logger.debug(
                 "Unable to locate install path for Maya %s in registry",
                 version,
             )
@@ -108,7 +108,7 @@ def get_maya(version: str) -> Path:
     if exe.exists():
         return exe
 
-    msg = f"Maya executable at expected path {exe} does not exist"
+    msg = f"Maya executable expected path {exe} does not exist"
     raise FileNotFoundError(msg)
 
 
@@ -135,5 +135,5 @@ def get_mayapy(version: str) -> Path:
     if exe.exists():
         return exe
 
-    msg = f"Mayapy executable at expected path {exe} does not exist"
+    msg = f"Mayapy executable expected path {exe} does not exist"
     raise FileNotFoundError(msg)

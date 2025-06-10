@@ -78,7 +78,7 @@ def get_mobu_install_dir(version: str) -> Path:
                 return registry_dir
 
         except FileNotFoundError:
-            logger.exception(
+            logger.debug(
                 "Unable to locate install path for MotionBuilder %s in registry",
                 version,
             )
@@ -104,14 +104,12 @@ def get_mobu_exe(version: str, variant: Literal["mobu", "mobupy"]) -> Path:
         install_dir = get_mobu_install_dir(version=version)
     except FileNotFoundError as e:
         msg = f"Failed to get MotionBuilder {version} installation directory"
-        logger.exception(msg)
         raise FileNotFoundError(msg) from e
 
     try:
         names = get_mobu_names()
     except FileNotFoundError as e:
         msg = "Failed to get MotionBuilder platform paths"
-        logger.exception(msg)
         raise FileNotFoundError(msg) from e
 
     mobu = install_dir / names["bin"] / names[variant]
@@ -138,8 +136,6 @@ def get_mobu(version: str) -> Path:
         return get_mobu_exe(version=version, variant="mobu")
     except FileNotFoundError as e:
         msg = "Failed to locate MotionBuilder executable"
-        logger.exception(msg)
-
         raise FileNotFoundError(msg) from e
 
 
@@ -159,6 +155,4 @@ def get_mobupy(version: str) -> Path:
         return get_mobu_exe(version=version, variant="mobupy")
     except FileNotFoundError as e:
         msg = "Failed to locate mobupy executable"
-        logger.exception(msg)
-
         raise FileNotFoundError(msg) from e
