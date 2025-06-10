@@ -9,14 +9,25 @@
 import logging
 import os
 import platform
+import shutil
 from logging import Logger
 from pathlib import Path
-from shutil import which
+from subprocess import check_output
 from typing import Literal
 
 logger: Logger = logging.getLogger(__name__)
 
 CURRENT_PLATFORM = platform.system()
+
+
+def get_blender_exe_version(blender_exe: str) -> str:
+    # > blender --version returns "Blender <version>" followed by lines of detail
+    version = check_output(
+        args=[blender_exe, "--version"],
+        encoding="utf-8",
+        universal_newlines=True,
+    ).splitlines()[0]
+    return version.split(" ")[-1]
 
 
 def get_blender(version: str) -> Path:
@@ -35,11 +46,11 @@ def get_blender(version: str) -> Path:
         "blender.exe" if CURRENT_PLATFORM == "Windows" else "blender"
     )
 
-    which_blender = which(cmd="blender")
+    which_blender = shutil.which(cmd="blender")
     if (
         which_blender is not None
         and Path(which_blender).is_file()
-        and version in which_blender
+        and version in get_blender_exe_version(blender_exe=which_blender)
     ):
         return Path(which_blender)
 
