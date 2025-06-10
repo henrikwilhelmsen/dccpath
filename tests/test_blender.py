@@ -57,7 +57,7 @@ def test_get_blender(
     """Check that function returns the expected path on given platform."""
 
 
-def test_blender_invalid_versions(
+def test_blender_raises_file_not_found_error(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Check that function raises FileNotFoundError when Blender is not found."""
