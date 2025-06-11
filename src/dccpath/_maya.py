@@ -45,17 +45,17 @@ def get_maya_install_dir(version: str) -> Path:
         if maya_location.exists():
             return maya_location
 
+    program_files = os.getenv("PROGRAMFILES", default="C:/Program Files")
     default_paths = {
         "Darwin": Path(f"/Applications/Autodesk/maya{version}/Maya.app/Contents"),
         "Linux": Path(f"/usr/autodesk/maya{version}"),
-        "Windows": Path(f"C:/Program Files/Autodesk/Maya{version}"),
+        "Windows": Path(f"{program_files}/Autodesk/Maya{version}"),
     }
-    default_path = default_paths.get(CURRENT_PLATFORM)
 
+    default_path = default_paths.get(CURRENT_PLATFORM)
     if default_path is not None and default_path.is_dir():
         return default_path
 
-    # Windows registry
     if platform.system() == "Windows":
         from winreg import (
             HKEY_LOCAL_MACHINE,
