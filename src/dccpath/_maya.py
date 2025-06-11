@@ -14,16 +14,14 @@ from typing import Literal
 
 logger = logging.getLogger(__name__)
 
-MAYA_EXE_NAME: Literal["maya.exe", "maya"] = (
-    "maya.exe" if platform.system() == "Windows" else "maya"
-)
-
-MAYAPY_EXE_NAME: Literal["mayapy.exe", "mayapy"] = (
-    "mayapy.exe" if platform.system() == "Windows" else "mayapy"
-)
+CURRENT_PLATFORM = platform.system()
 
 
-def get_maya_install_dir(version: str) -> Path | None:
+def get_maya_exe_name(variant: Literal["maya", "mayapy"]) -> str:
+    return f"{variant}.exe" if CURRENT_PLATFORM == "Windows" else variant
+
+
+def get_maya_install_dir(version: str) -> Path:
     """Get the Maya install directory.
 
     Checks the MAYA_LOCATION variable first, then searches platform specific locations.
@@ -34,32 +32,30 @@ def get_maya_install_dir(version: str) -> Path | None:
     Args:
         version: The version of Maya to get the install dir for.
 
+    Raises:
+        FileNotFoundError: If the install directory was not found.
+
     Returns:
         The path to the install directory if found, otherwise None.
     """
-    maya_location_var = os.environ.get("MAYA_LOCATION")
-    if maya_location_var is not None and version in maya_location_var:
-        install_dir = Path(maya_location_var)
+    maya_location_env = os.environ.get("MAYA_LOCATION")
+    if maya_location_env is not None and version in maya_location_env:
+        maya_location = Path(maya_location_env)
 
-        if install_dir.exists():
-            return install_dir
+        if maya_location.exists():
+            return maya_location
 
-    # Mac
-    if platform.system() == "Darwin":
-        maya_default_path = Path(
-            f"/Applications/Autodesk/maya{version}/Maya.app/Contents",
-        )
+    default_paths = {
+        "Darwin": Path(f"/Applications/Autodesk/maya{version}/Maya.app/Contents"),
+        "Linux": Path(f"/usr/autodesk/maya{version}"),
+        "Windows": Path(f"C:/Program Files/Autodesk/Maya{version}"),
+    }
+    default_path = default_paths.get(CURRENT_PLATFORM)
 
-        if maya_default_path.exists():
-            return maya_default_path
-    # Linux
-    if platform.system() == "Linux":
-        maya_default_path = Path(f"/usr/autodesk/maya{version}")
+    if default_path is not None and default_path.is_dir():
+        return default_path
 
-        if maya_default_path.exists():
-            return maya_default_path
-
-    # Windows
+    # Windows registry
     if platform.system() == "Windows":
         from winreg import (
             HKEY_LOCAL_MACHINE,
@@ -74,58 +70,70 @@ def get_maya_install_dir(version: str) -> Path | None:
                 reg,
                 f"SOFTWARE\\AUTODESK\\MAYA\\{version}\\Setup\\InstallPath",
             )
+            maya_install_dir = Path(QueryValue(reg_key, "MAYA_INSTALL_LOCATION"))
+
+            if maya_install_dir.exists():
+                return maya_install_dir
+
         except FileNotFoundError:
             logger.debug(
                 "Unable to locate install path for Maya %s in registry",
                 version,
             )
-            return None
 
-        maya_install_dir = Path(QueryValue(reg_key, "MAYA_INSTALL_LOCATION"))
-        if maya_install_dir.exists():
-            logger.debug("Maya install dir located in registry: %s", maya_install_dir)
-            return maya_install_dir
-
-    return None
+    msg = f"Unable to locate install dir for Maya {version}"
+    raise FileNotFoundError(msg)
 
 
-def get_maya(version: str) -> Path | None:
+def get_maya(version: str) -> Path:
     """Get the path to the Maya executable.
 
     Args:
         version: The version of Maya to get the executable dir for.
 
+    Raises:
+        FileNotFoundError: If the executable was not found.
+
     Returns:
-        The path to the Maya executable if found, otherwise None.
+        The path to the Maya executable if found.
 
     """
-    install_dir = get_maya_install_dir(version=version)
-    if install_dir is None:
-        return None
+    try:
+        install_dir = get_maya_install_dir(version=version)
+    except FileNotFoundError as e:
+        msg = "Failed to locate maya install dir"
+        raise FileNotFoundError(msg) from e
 
-    exe = install_dir / "bin" / MAYA_EXE_NAME
+    exe = install_dir / "bin" / get_maya_exe_name(variant="maya")
     if exe.exists():
         return exe
 
-    return None
+    msg = f"Maya executable expected path {exe} does not exist"
+    raise FileNotFoundError(msg)
 
 
-def get_mayapy(version: str) -> Path | None:
+def get_mayapy(version: str) -> Path:
     """Get the path to the mayapy executable.
 
     Args:
         version: The version of Maya to get the mayapy executable dir for.
 
+    Raises:
+        FileNotFoundError: If the executable was not found.
+
     Returns:
-        The path to the mayapy executable if found, otherwise None.
+        The path to the mayapy executable if found.
 
     """
-    install_dir = get_maya_install_dir(version=version)
-    if install_dir is None:
-        return None
+    try:
+        install_dir = get_maya_install_dir(version=version)
+    except FileNotFoundError as e:
+        msg = "Failed to locate maya install dir"
+        raise FileNotFoundError(msg) from e
 
-    exe = install_dir / "bin" / MAYAPY_EXE_NAME
+    exe = install_dir / "bin" / get_maya_exe_name(variant="mayapy")
     if exe.exists():
         return exe
 
-    return None
+    msg = f"Mayapy executable expected path {exe} does not exist"
+    raise FileNotFoundError(msg)

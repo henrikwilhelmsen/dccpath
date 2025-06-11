@@ -13,20 +13,26 @@ from typing import Literal
 
 logger = logging.getLogger(__name__)
 
-MOBU_BIN_DIR: Literal["bin/x64", "bin/linux_64"] = (
-    "bin/x64" if platform.system() == "Windows" else "bin/linux_64"
-)
-
-MOBU_EXE_NAME: Literal["motionbuilder.exe", "motionbuilder"] = (
-    "motionbuilder.exe" if platform.system() == "Windows" else "motionbuilder"
-)
-
-MOBUPY_EXE_NAME: Literal["mobupy.exe", "mobupy"] = (
-    "mobupy.exe" if platform.system() == "Windows" else "mobupy"
-)
+CURRENT_PLATFORM = platform.system()
 
 
-def get_mobu_install_dir(version: str) -> Path | None:
+def get_mobu_names() -> dict[Literal["bin", "mobu", "mobupy"], str]:
+    if CURRENT_PLATFORM == "Windows":
+        mobu_bin = "bin/x64"
+        mobu = "motionbuilder.exe"
+        mobupy = "mobupy.exe"
+    elif CURRENT_PLATFORM == "Linux":
+        mobu_bin = "bin/linux_64"
+        mobu = "motionbuilder"
+        mobupy = "mobupy"
+    else:
+        msg = f"Platform {CURRENT_PLATFORM} not supported by MotionBuilder"
+        raise FileNotFoundError(msg)
+
+    return {"bin": mobu_bin, "mobu": mobu, "mobupy": mobupy}
+
+
+def get_mobu_install_dir(version: str) -> Path:
     """Get the MotionBuilder install directory.
 
     Checks for the default install directory on both Linux and Windows. On Windows
@@ -38,15 +44,21 @@ def get_mobu_install_dir(version: str) -> Path | None:
     Args:
         version: The version of MotionBuilder to get the install dir for.
 
+    Raises:
+        FileNotFoundError: If the MotionBuilder install directory cannot be found.
+
     Returns:
         The path to the install directory if found, else None.
     """
-    if platform.system() == "Linux":
-        default_path = Path(f"/usr/autodesk/MotionBuilder{version}")
-        if default_path.is_dir():
-            return default_path
+    default_dirs = {
+        "Linux": Path(f"/usr/autodesk/MotionBuilder{version}"),
+        "Windows": Path(f"C:/Program Files/Autodesk/MotionBuilder{version}"),
+    }
+    default_path = default_dirs.get(CURRENT_PLATFORM)
+    if default_path is not None and default_path.is_dir():
+        return default_path
 
-    if platform.system() == "Windows":
+    if CURRENT_PLATFORM == "Windows":
         from winreg import (
             HKEY_LOCAL_MACHINE,
             ConnectRegistry,
@@ -60,58 +72,87 @@ def get_mobu_install_dir(version: str) -> Path | None:
                 reg,
                 f"SOFTWARE\\AUTODESK\\MOTIONBUILDER\\{version}",
             )
+            registry_dir = Path(QueryValue(reg_key, "InstallPath"))
+            if registry_dir.exists():
+                logger.debug("Mobu install dir located in registry: %s", registry_dir)
+                return registry_dir
+
         except FileNotFoundError:
             logger.debug(
                 "Unable to locate install path for MotionBuilder %s in registry",
                 version,
             )
-            return None
 
-        registry_dir = Path(QueryValue(reg_key, "InstallPath"))
-        if registry_dir.exists():
-            logger.debug("Mobu install dir located in registry: %s", registry_dir)
-            return registry_dir
-
-    return None
+    msg = f"Unable to locate MotionBuilder {version} installation directory"
+    raise FileNotFoundError(msg)
 
 
-def get_mobu(version: str) -> Path | None:
+def get_mobu_exe(version: str, variant: Literal["mobu", "mobupy"]) -> Path:
+    """Get the path to the MotionBuilder or mobupy executable if it exists.
+
+    Args:
+        version: The version of MotionBuilder to get the executable for.
+        variant: MotionBuilder or mobupy
+
+    Raises:
+       FileNotFoundError: If the file is not found.
+
+    Returns:
+        Path to the executable if found.
+    """
+    try:
+        install_dir = get_mobu_install_dir(version=version)
+    except FileNotFoundError as e:
+        msg = f"Failed to get MotionBuilder {version} installation directory"
+        raise FileNotFoundError(msg) from e
+
+    try:
+        names = get_mobu_names()
+    except FileNotFoundError as e:
+        msg = "Failed to get MotionBuilder platform paths"
+        raise FileNotFoundError(msg) from e
+
+    mobu = install_dir / names["bin"] / names[variant]
+    if mobu.is_file():
+        return mobu
+
+    msg = f"MotionBuilder not at expected path {mobu}, file does not exist"
+    raise FileNotFoundError(msg)
+
+
+def get_mobu(version: str) -> Path:
     """Get the path to the MotionBuilder executable if it exists.
 
     Args:
         version: The version of MotionBuilder to get the executable for.
 
+    Raises:
+       FileNotFoundError: If the file is not found.
+
     Returns:
-        Path to the executable if found, else None.
+        Path to the executable if found.
     """
-    install_dir = get_mobu_install_dir(version=version)
-    if install_dir is None:
-        return None
-
-    mobu = install_dir / MOBU_BIN_DIR / MOBU_EXE_NAME
-    if mobu.is_file():
-        return mobu
-
-    return None
+    try:
+        return get_mobu_exe(version=version, variant="mobu")
+    except FileNotFoundError as e:
+        msg = "Failed to locate MotionBuilder executable"
+        raise FileNotFoundError(msg) from e
 
 
-def get_mobupy(version: str) -> Path | None:
-    """Get the path to the mobupy executable.
-
-    See `dccpath.mobu.get_mobu_install_dir` for details on which paths are searched.
+def get_mobupy(version: str) -> Path:
+    """Get the path to the mobupy executable if it exists.
 
     Args:
-        version: The version of MotionBuilder to get the mobupy executable for.
+        version: The version of MotionBuilder to get the executable for.
+
+    Raises:
+       FileNotFoundError: If the file is not found.
 
     Returns:
-        Path to the mobupy executable if found, else None.
+        Path to the executable if found.
     """
-    install_dir = get_mobu_install_dir(version=version)
-    if install_dir is None:
-        return None
-
-    mobupy = install_dir / MOBU_BIN_DIR / MOBUPY_EXE_NAME
-    if mobupy.is_file():
-        return mobupy
-
-    return None
+    try:
+        return get_mobu_exe(version=version, variant="mobupy")
+    except FileNotFoundError as e:
+        msg = "Failed to locate mobupy executable"
+        raise FileNotFoundError(msg) from e
