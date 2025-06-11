@@ -13,7 +13,6 @@ import shutil
 from logging import Logger
 from pathlib import Path
 from subprocess import check_output
-from typing import Literal
 
 logger: Logger = logging.getLogger(__name__)
 
@@ -33,6 +32,13 @@ def get_blender_exe_version(blender_exe: str) -> str:
 def get_blender(version: str) -> Path:
     """Get the path to the Blender executable if it exists.
 
+    Searches PATH with `shutil.which` first, then checks platform specific default
+    paths.
+
+    On Windows: "%PROGRAMFILES%/Blender Foundation/Blender <version>/blender.exe"
+    MacOS: "/Applications/Blender.app/..." first, then "/opt/homebrew/bin/blender"
+    Linux: "/usr/bin/blender"
+
     Args:
         version: The version of Blender to get the executable for.
 
@@ -42,11 +48,23 @@ def get_blender(version: str) -> Path:
     Returns:
         The path to the Blender executable if found.
     """
-    blender_name: Literal["blender.exe", "blender"] = (
-        "blender.exe" if CURRENT_PLATFORM == "Windows" else "blender"
-    )
+    program_files = os.getenv("PROGRAMFILES", default="C:/Program Files")
+    default_paths = {
+        "Darwin": [
+            Path("/Applications/Blender.app/Contents/MacOS/Blender"),
+            Path("/opt/homebrew/bin/blender"),
+        ],
+        "Windows": [
+            Path(
+                f"{program_files}/Blender Foundation/Blender {version}/blender.exe",
+            ),
+        ],
+        "Linux": [
+            Path("/usr/bin/blender"),
+        ],
+    }
 
-    which_blender = shutil.which(cmd="blender")
+    which_blender = shutil.which("blender")
     if (
         which_blender is not None
         and Path(which_blender).is_file()
@@ -54,21 +72,15 @@ def get_blender(version: str) -> Path:
     ):
         return Path(which_blender)
 
-    if CURRENT_PLATFORM == "Darwin":
-        homebrew_blender = Path("/opt/homebrew/bin/blender")
-        if homebrew_blender.is_file():
-            return homebrew_blender
+    try:
+        platform_default_paths: list[Path] = default_paths[CURRENT_PLATFORM]
+    except KeyError:
+        logger.debug("No default paths for platform %s", CURRENT_PLATFORM)
+        platform_default_paths = []
 
-    if CURRENT_PLATFORM == "Windows":
-        program_files = os.getenv("PROGRAMFILES")
-
-        if program_files is not None:
-            default_blender = Path(
-                rf"{program_files}\Blender Foundation\Blender {version}\{blender_name}",
-            )
-
-            if default_blender.is_file():
-                return default_blender
+    for p in platform_default_paths:
+        if p.is_file() and version in get_blender_exe_version(blender_exe=p.as_posix()):
+            return p
 
     msg = f"Unable to locate a Blender {version} executable"
     raise FileNotFoundError(msg)
