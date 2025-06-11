@@ -34,14 +34,15 @@ def test_get_maya_env_var(  # noqa: PLR0913
     os_type: OSType,
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
+    fs: FakeFilesystem,
 ) -> None:
     """Test that the function returns path to exe when MAYA_LOCATION env var is set."""
-    maya_location = tmp_path / f"maya{version}"
-    maya_bin = maya_location / "bin"
-    maya = maya_bin / exe_name
+    fs.os = os_type
 
-    maya_bin.mkdir(parents=True)
-    maya.touch()
+    maya_location = tmp_path / f"maya{version}"
+    maya = maya_location / "bin" / exe_name
+
+    _ = fs.create_file(maya)  # pyright: ignore[reportUnknownMemberType]
 
     if os_type == OSType.WINDOWS:
         current_platform = "Windows"
