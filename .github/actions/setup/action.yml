@@ -1,0 +1,20 @@
+name: "Setup Python"
+description: "Set up Python and all dependencies using uv"
+runs:
+  using: "composite"
+  steps:
+    - name: Setup uv
+      uses: astral-sh/setup-uv@v5
+      with:
+        enable-cache: true
+        cache-dependency-glob: "uv.lock"
+        version: "0.7.13"
+
+    - name: "Setup Python"
+      uses: actions/setup-python@v5
+      with:
+        python-version-file: "pyproject.toml"
+
+    - name: Install the project
+      run: uv sync --locked --all-extras --dev
+      shell: bash
