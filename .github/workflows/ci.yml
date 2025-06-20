@@ -28,6 +28,8 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
+    permissions:
+      id-token: write
     needs: [lint, test]
     steps:
       - name: Checkout Repo
