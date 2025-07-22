@@ -24,7 +24,7 @@ from dccpath._mobu import get_mobupy
             functools.partial(get_mobu, "2023"),
             OSType.WINDOWS,
             Path(
-                "C:/Program Files/Autodesk/MotionBuilder 2023/bin/x64/motionbuilder.exe",
+                "C:/Program Files/Autodesk/MotionBuilder 2023/bin/x64/motionbuilder.exe",  # noqa: E501
             ),
         ),
         (
