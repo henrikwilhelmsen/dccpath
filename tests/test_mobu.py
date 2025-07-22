@@ -24,24 +24,24 @@ from dccpath._mobu import get_mobupy
             functools.partial(get_mobu, "2023"),
             OSType.WINDOWS,
             Path(
-                "C:/Program Files/Autodesk/MotionBuilder2023/bin/x64/motionbuilder.exe",
+                "C:/Program Files/Autodesk/MotionBuilder 2023/bin/x64/motionbuilder.exe",  # noqa: E501
             ),
         ),
         (
             functools.partial(get_mobu, "2026"),
             OSType.LINUX,
-            Path("/usr/autodesk/MotionBuilder2026/bin/linux_64/motionbuilder"),
+            Path("/usr/autodesk/MotionBuilder 2026/bin/linux_64/motionbuilder"),
         ),
         (
             functools.partial(get_mobupy, "2020"),
             OSType.LINUX,
-            Path("/usr/autodesk/MotionBuilder2020/bin/linux_64/mobupy"),
+            Path("/usr/autodesk/MotionBuilder 2020/bin/linux_64/mobupy"),
         ),
         (
             functools.partial(get_mobupy, "2022"),
             OSType.WINDOWS,
             Path(
-                "C:/Program Files/Autodesk/MotionBuilder2022/bin/x64/mobupy.exe",
+                "C:/Program Files/Autodesk/MotionBuilder 2022/bin/x64/mobupy.exe",
             ),
         ),
     ],
