@@ -33,8 +33,8 @@ def get_mobu_install_dir(version: str) -> Path:
     """
     program_files = os.getenv("PROGRAMFILES", default="C:/Program Files")
     default_dirs = {
-        "Linux": Path(f"/usr/autodesk/MotionBuilder{version}"),
-        "Windows": Path(f"{program_files}/Autodesk/MotionBuilder{version}"),
+        "Linux": Path(f"/usr/autodesk/MotionBuilder {version}"),
+        "Windows": Path(f"{program_files}/Autodesk/MotionBuilder {version}"),
     }
     default_path = default_dirs.get(CURRENT_PLATFORM)
     if default_path is not None and default_path.is_dir():
